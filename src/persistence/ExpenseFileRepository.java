@@ -30,7 +30,7 @@ public class ExpenseFileRepository {
         List<String> csvLines = new ArrayList<>();
 
         for (Map.Entry<Long, Expense> expense : expenseTracker.expenses.entrySet()) {
-            String lineItem = "%s,%s,$%s,%s,%s".formatted(
+            String lineItem = "%s,%s,%s,%s,%s".formatted(
                     expense.getKey(),
                     expense.getValue().getDescription(),
                     expense.getValue().getAmount(),

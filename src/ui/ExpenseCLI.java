@@ -7,6 +7,7 @@ import persistence.ExpenseFileRepository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.Month;
 import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -41,6 +42,7 @@ public class ExpenseCLI {
             System.out.println("7. Delete expense");
             System.out.println("8. Save expenses");
             System.out.println("9. Load expenses");
+            System.out.println("10. Set monthly budget");
             System.out.println("0. Exit");
             System.out.print("Enter your choice here: ");
 
@@ -85,6 +87,9 @@ public class ExpenseCLI {
                 case 9:
                     loadExpensesUI();
                     break;
+                case 10:
+                    setMonthlyBudgetUI();
+                    break;
                 case 0:
                     System.out.println("Exiting program.");
                     scanner.close();
@@ -101,7 +106,7 @@ public class ExpenseCLI {
         System.out.print("Enter the expense description: ");
         String description = scanner.nextLine();
 
-        System.out.print("Enter amount of expense: ");
+        System.out.print("Enter amount of expense: $");
         BigDecimal amount = scanner.nextBigDecimal();
 
         Category category = getCategory();
@@ -113,21 +118,21 @@ public class ExpenseCLI {
         Expense expense = Expense.createNew(description, amount, category, date);
 
         expenseTracker.addExpense(expense);
-        System.out.println(expense);
+        System.out.println("\n" + expense);
     }
 
     private void viewAllExpensesUI() {
+        System.out.println("\n");
         List<Expense> expenses = expenseTracker.allExpenses();
         expenses.forEach(expense -> System.out.println(expense.toString()));
     }
 
     private void viewExpensesByMonthUI() {
+        System.out.println("\n");
         System.out.print("Enter year and month of expenses to view (MM-yyyy): ");
         String stringDate = scanner.nextLine();
 
-        int year = Integer.parseInt(stringDate.substring(3, 7));
-        int month = Integer.parseInt(stringDate.substring(0, 2));
-        YearMonth yearMonth = YearMonth.of(year, month);
+        YearMonth  yearMonth = parseYearMonth(stringDate);
 
         List<String> expenses = expenseTracker.findExpensesByMonth(yearMonth);
 
@@ -137,42 +142,75 @@ public class ExpenseCLI {
     }
 
     private void viewTotalSpendingUI() {
+        System.out.println("\n");
         System.out.println("Your total spending is: $" + expenseTracker.calculateTotalSpending());
     }
 
     private void viewTotalSpendingByCategoryUI() {
+        System.out.println("\n");
         Map<Category, BigDecimal> categoryTotals = expenseTracker.calculateTotalByCategory();
-
+        System.out.println("\n");
         categoryTotals.forEach((category, total) -> {
             System.out.println(category + ": $" + total);
         });
     }
 
     private void viewExpensesByCategoryUI() {
+        System.out.println("\n");
         Category category = getCategory();
         List<Expense> expenses = expenseTracker.findExpensesByCategory(category);
-
+        System.out.println("\n");
         for (Expense expense : expenses) {
             System.out.println(expense.toString());
         }
     }
 
     private void deleteExpenseUI() {
-        System.out.print("Enter the ID of the expense you would like to delete: ");
+        System.out.print("\nEnter the ID of the expense you would like to delete: ");
         long expenseId = scanner.nextLong();
         expenseTracker.removeExpense(expenseId);
     }
 
     private void saveExpensesUI() {
-        System.out.print("Enter a file name: ");
+        System.out.print("\nEnter a file name: ");
         String fileName = scanner.nextLine();
         repository.save(fileName);
     }
 
     private void loadExpensesUI() {
-        System.out.print("Enter a file name: ");
+        System.out.print("\nEnter a file name: ");
         String fileName = scanner.nextLine();
         repository.load(fileName);
+    }
+
+    private void setMonthlyBudgetUI() {
+        System.out.print("\nEnter month for budget (MM-yyyy): ");
+        YearMonth yearMonth = parseYearMonth(scanner.nextLine());
+
+        System.out.print("Enter your budget for the month: $");
+        BigDecimal budget = scanner.nextBigDecimal();
+
+        expenseTracker.setMonthlyBudget(budget, yearMonth);
+        ExpenseTracker.MonthlyBudgetDetails budgetDetails = expenseTracker.calculateMonthlyBudget(yearMonth);
+
+        Month month = yearMonth.getMonth();
+        int year = yearMonth.getYear();
+
+        String ui = """
+                \n
+                Month: %s %s
+                Budget: $%s
+                Spent: $%s
+                Remaining: $%s
+                """.formatted(
+                        month,
+                        year,
+                        budgetDetails.monthBudget(),
+                        budgetDetails.spent(),
+                        budgetDetails.remaining()
+                );
+
+        System.out.println(ui);
     }
 
     private Category getCategory() {
@@ -209,8 +247,14 @@ public class ExpenseCLI {
         try {
             return LocalDate.parse(date, formatter);
         } catch (DateTimeParseException e) {
-            throw new DateTimeParseException("Invalid date input", e.getParsedString(), e.getErrorIndex());
+            throw new DateTimeParseException(("Invalid date input"), e.getParsedString(), e.getErrorIndex());
         }
+    }
+
+    private YearMonth parseYearMonth(String date) {
+        int year = Integer.parseInt(date.substring(3, 7));
+        int month = Integer.parseInt(date.substring(0, 2));
+        return YearMonth.of(year, month);
     }
 
 }

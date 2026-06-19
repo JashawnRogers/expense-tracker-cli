@@ -7,6 +7,7 @@ import java.util.*;
 
 public class ExpenseTracker {
     public final Map<Long, Expense> expenses = new LinkedHashMap<>();
+    private final Map<YearMonth, BigDecimal> budget = new HashMap<>();
 
     public void addExpense(Expense expense) {
         try {
@@ -101,4 +102,33 @@ public class ExpenseTracker {
 
         return allExpenses;
     }
+
+    public void setMonthlyBudget(BigDecimal userSetBudget, YearMonth yearMonth) {
+        if (userSetBudget.compareTo(BigDecimal.ZERO) <= 0) {
+            System.err.println("Monthly Budget amount must be at least $0.");
+        } else {
+            budget.put(yearMonth, userSetBudget);
+        }
+    }
+
+    public MonthlyBudgetDetails calculateMonthlyBudget(YearMonth yearMonth) {
+        BigDecimal spent = BigDecimal.ZERO;
+        BigDecimal monthBudget = budget.get(yearMonth);
+
+
+        for (Map.Entry<Long, Expense> expense : expenses.entrySet()) {
+            Month expenseMonth = expense.getValue().getDate().getMonth();
+            int expenseYear = expense.getValue().getDate().getYear();
+
+            if (expenseMonth.equals(yearMonth.getMonth()) &&
+                    expenseYear == yearMonth.getYear()) {
+                spent = spent.add(expense.getValue().getAmount());
+            }
+        }
+
+        BigDecimal remaining = monthBudget.subtract(spent);
+        return new MonthlyBudgetDetails(monthBudget, spent, remaining);
+    }
+
+    public record MonthlyBudgetDetails(BigDecimal monthBudget, BigDecimal spent, BigDecimal remaining) {}
 }
