@@ -2,6 +2,7 @@ package persistence;
 
 import domain.Category;
 import domain.Expense;
+import domain.ExpenseTracker;
 
 import java.io.*;
 import java.math.BigDecimal;
@@ -12,23 +13,23 @@ import java.util.*;
 import java.util.stream.Stream;
 
 public class ExpenseFileRepository {
-    private final Map<Long, Expense> expensesMap;
+    private final ExpenseTracker expenseTracker;
     private static final String CLASSPATH = "/Users/jashawnrogers/IdeaProjects/ExpenseTrackerCLI/src/files/";
 
-    public ExpenseFileRepository(Map<Long, Expense> expensesMap) {
-        this.expensesMap = expensesMap;
+    public ExpenseFileRepository(ExpenseTracker expenseTracker) {
+        this.expenseTracker = expenseTracker;
     }
 
-    public PrintWriter createFile(String fileName) throws IOException {
+    private PrintWriter createFile(String fileName) throws IOException {
         FileWriter file = new FileWriter(CLASSPATH + fileName.toLowerCase().trim());
-
         return new PrintWriter(file);
+
     }
 
     public void writeToFile(PrintWriter writer) {
         List<String> csvLines = new ArrayList<>();
 
-        for (Map.Entry<Long, Expense> expense : expensesMap.entrySet()) {
+        for (Map.Entry<Long, Expense> expense : expenseTracker.expenses.entrySet()) {
             String lineItem = "%s,%s,$%s,%s,%s".formatted(
                     expense.getKey(),
                     expense.getValue().getDescription(),
@@ -37,20 +38,11 @@ public class ExpenseFileRepository {
                     expense.getValue().getDate()
             );
 
-            int endingIndex = lineItem.indexOf(",");
-            int startingIndex = 0;
-            String id = lineItem.substring(startingIndex, endingIndex);
-
-            if (expense.getKey().toString().equals(id)) {
-                System.err.println("Line item with ID " + expense.getValue().getId() + " Already exists in file.");
-                continue;
-            }
-
             csvLines.add(lineItem);
         }
 
         if (csvLines.isEmpty()) {
-            System.out.println("No data was added to ");
+            System.out.println("No data was added to the file.");
             return;
         }
 
@@ -64,7 +56,8 @@ public class ExpenseFileRepository {
     public void save(String fileName) {
         try (PrintWriter writer = createFile(fileName)) {
             writeToFile(writer);
-            System.out.println(" CSV file successfully generated.");
+
+            System.out.println("CSV file successfully generated.");
         } catch (IOException e) {
             System.err.println("Failed to initialize CSV file : " + e.getMessage());
         }
@@ -86,8 +79,7 @@ public class ExpenseFileRepository {
         }
     }
 
-    private Map<Long, Expense> mapFileData(List<List<String>> fileData) {
-        Map<Long, Expense> expenses = new LinkedHashMap<>();
+    private void mapFileData(List<List<String>> fileData) {
         for (List<String> row : fileData) {
             Long id = Long.parseLong(row.getFirst());
             String description = row.get(1);
@@ -95,10 +87,8 @@ public class ExpenseFileRepository {
             Category category = Category.valueOf(row.get(3));
             LocalDate date = LocalDate.parse(row.getLast());
 
-            expenses.put(id ,Expense.createFromExisting(id, description, amount,category,date));
+            expenseTracker.addExpense(Expense.createFromExisting(id, description, amount,category,date));
         }
-
-        return expenses;
     }
 
 }

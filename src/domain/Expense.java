@@ -76,9 +76,13 @@ public class Expense {
         return new Expense(id, description, amount, category, date);
     }
 
+    public static Expense createNew(String description, BigDecimal amount, Category category, LocalDate date) {
+        return new Expense(description, amount, category, date);
+    }
+
     @Override
     public String toString() {
-        return "ID: %s | Date: %s | Category: %s | Amount: %s | Description: %s"
+        return "ID: %s | Date: %s | Category: %s | Amount: $%s | Description: %s"
                 .formatted(this.id, this.date, this.category, this.amount, this.description);
     }
 

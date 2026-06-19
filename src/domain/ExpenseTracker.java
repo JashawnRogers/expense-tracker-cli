@@ -6,7 +6,7 @@ import java.time.YearMonth;
 import java.util.*;
 
 public class ExpenseTracker {
-    private static final Map<Long, Expense> expenses = new LinkedHashMap<>();
+    public final Map<Long, Expense> expenses = new LinkedHashMap<>();
 
     public void addExpense(Expense expense) {
         try {
@@ -20,18 +20,18 @@ public class ExpenseTracker {
         try {
             expenses.get(id);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Id not found.");
+            throw new IllegalArgumentException("Expense not found.");
         }
     }
 
 //    METHODS TO ADD
 //   Find expenses by category
-    public List<String> findExpensesByCategory(Category category) {
-        List<String> expensesByCategory = new ArrayList<>();
+    public List<Expense> findExpensesByCategory(Category category) {
+        List<Expense> expensesByCategory = new ArrayList<>();
 
-        for (Map.Entry<Long, Expense> expense : expenses.entrySet()) {
-            if (expense.getValue().getCategory().equals(category)) {
-                expensesByCategory.add(expense.getValue().toString());
+        for (Expense expense : expenses.values()) {
+            if (expense.getCategory().equals(category)) {
+                expensesByCategory.add(expense);
             }
         }
 
@@ -74,20 +74,19 @@ public class ExpenseTracker {
     public Map<Category, BigDecimal> calculateTotalByCategory() {
         Map<Category, BigDecimal> categoryTotals = new HashMap<>();
 
-        for (Category category : Category.values()) {
-            BigDecimal total = BigDecimal.ZERO;
+        for (Expense expense : expenses.values()) {
+            BigDecimal amount = expense.getAmount();
+            Category category = expense.getCategory();
 
-            for (Map.Entry<Long, Expense> expense : expenses.entrySet()) {
-                if (category.equals(expense.getValue().getCategory())) {
-                    total = total.add(expense.getValue().getAmount());
-                }
-            }
+            // Get the current total for this category. If it's not in the map yet, start at 0.
+            BigDecimal categoryTotal = categoryTotals.getOrDefault(category, BigDecimal.ZERO);
 
-            categoryTotals.put(category, total);
+            categoryTotals.put(category, categoryTotal.add(amount));
         }
 
         return categoryTotals;
     }
+
 
 //   Return all expenses
     public List<Expense> allExpenses() {
