@@ -1,6 +1,7 @@
 package domain;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Month;
 import java.time.YearMonth;
 import java.util.*;
@@ -117,6 +118,18 @@ public class ExpenseTracker {
 
         Map.Entry<BigDecimal, Long> highestAmount = amounts.lastEntry();
         return expenses.get(highestAmount.getValue());
+    }
+
+    public Map<Category, BigDecimal> calculateCategoryPercentage() {
+        Map<Category, BigDecimal> categoryTotals = calculateTotalByCategory();
+        BigDecimal totalSpending = calculateTotalSpending();
+
+        categoryTotals.replaceAll((category, total) ->
+                total.divide(totalSpending, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(2, RoundingMode.HALF_UP));
+
+        return  categoryTotals;
     }
 
     public MonthlyBudgetDetails calculateMonthlyBudget(YearMonth yearMonth) {

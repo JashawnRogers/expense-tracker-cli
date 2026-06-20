@@ -44,6 +44,7 @@ public class ExpenseCLI {
             System.out.println("9. Load expenses");
             System.out.println("10. Set monthly budget");
             System.out.println("11. View largest expense");
+            System.out.println("12. View category percentage report");
             System.out.println("0. Exit");
             System.out.print("Enter your choice here: ");
 
@@ -93,6 +94,9 @@ public class ExpenseCLI {
                     break;
                 case 11:
                     viewLargestExpenseUI();
+                    break;
+                case 12:
+                    viewCategoryPercentagesUI();
                     break;
                 case 0:
                     System.out.println("Exiting program.");
@@ -220,6 +224,15 @@ public class ExpenseCLI {
     private void viewLargestExpenseUI() {
         Expense expense = expenseTracker.findLargestExpense();
         System.out.println("\n Largest expense: " + expense.toString());
+    }
+
+    private void viewCategoryPercentagesUI() {
+        System.out.println("\nCategory Percentage Report");
+        Map<Category, BigDecimal> categories = expenseTracker.calculateCategoryPercentage();
+
+        categories.forEach((category, percentage) -> {
+            System.out.println(category + ": " + percentage + "%");
+        });
     }
 
     private Category getCategory() {
