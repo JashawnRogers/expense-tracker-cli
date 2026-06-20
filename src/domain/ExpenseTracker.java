@@ -111,6 +111,14 @@ public class ExpenseTracker {
         }
     }
 
+    public Expense findLargestExpense() {
+        TreeMap<BigDecimal, Long> amounts = new TreeMap<>();
+        expenses.forEach((id, expense) -> amounts.put(expense.getAmount(), id));
+
+        Map.Entry<BigDecimal, Long> highestAmount = amounts.lastEntry();
+        return expenses.get(highestAmount.getValue());
+    }
+
     public MonthlyBudgetDetails calculateMonthlyBudget(YearMonth yearMonth) {
         BigDecimal spent = BigDecimal.ZERO;
         BigDecimal monthBudget = budget.get(yearMonth);

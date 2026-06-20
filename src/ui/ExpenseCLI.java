@@ -43,6 +43,7 @@ public class ExpenseCLI {
             System.out.println("8. Save expenses");
             System.out.println("9. Load expenses");
             System.out.println("10. Set monthly budget");
+            System.out.println("11. View largest expense");
             System.out.println("0. Exit");
             System.out.print("Enter your choice here: ");
 
@@ -89,6 +90,9 @@ public class ExpenseCLI {
                     break;
                 case 10:
                     setMonthlyBudgetUI();
+                    break;
+                case 11:
+                    viewLargestExpenseUI();
                     break;
                 case 0:
                     System.out.println("Exiting program.");
@@ -211,6 +215,11 @@ public class ExpenseCLI {
                 );
 
         System.out.println(ui);
+    }
+
+    private void viewLargestExpenseUI() {
+        Expense expense = expenseTracker.findLargestExpense();
+        System.out.println("\n Largest expense: " + expense.toString());
     }
 
     private Category getCategory() {
