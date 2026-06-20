@@ -20,7 +20,7 @@ public class ExpenseTracker {
 
     public void removeExpense(long id) {
         try {
-            expenses.get(id);
+            expenses.remove(id);
         } catch (Exception e) {
             throw new IllegalArgumentException("Expense not found.");
         }

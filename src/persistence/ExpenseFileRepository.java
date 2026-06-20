@@ -83,7 +83,7 @@ public class ExpenseFileRepository {
         for (List<String> row : fileData) {
             Long id = Long.parseLong(row.getFirst());
             String description = row.get(1);
-            BigDecimal amount = BigDecimal.valueOf(Double.parseDouble(row.get(2)));
+            BigDecimal amount = new BigDecimal(row.get(2));
             Category category = Category.valueOf(row.get(3));
             LocalDate date = LocalDate.parse(row.getLast());
 
